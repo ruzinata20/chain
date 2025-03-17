@@ -1,8 +1,6 @@
 package app
 
 import (
-	"time"
-
 	runtimev1alpha1 "cosmossdk.io/api/cosmos/app/runtime/v1alpha1"
 	appv1alpha1 "cosmossdk.io/api/cosmos/app/v1alpha1"
 	authmodulev1 "cosmossdk.io/api/cosmos/auth/module/v1"
@@ -15,7 +13,6 @@ import (
 	feegrantmodulev1 "cosmossdk.io/api/cosmos/feegrant/module/v1"
 	genutilmodulev1 "cosmossdk.io/api/cosmos/genutil/module/v1"
 	govmodulev1 "cosmossdk.io/api/cosmos/gov/module/v1"
-	groupmodulev1 "cosmossdk.io/api/cosmos/group/module/v1"
 	mintmodulev1 "cosmossdk.io/api/cosmos/mint/module/v1"
 	paramsmodulev1 "cosmossdk.io/api/cosmos/params/module/v1"
 	slashingmodulev1 "cosmossdk.io/api/cosmos/slashing/module/v1"
@@ -31,6 +28,7 @@ import (
 	delegationmodulev1 "github.com/KYVENetwork/chain/api/kyve/delegation/module"
 	fundersmodulev1 "github.com/KYVENetwork/chain/api/kyve/funders/module"
 	globalmodulev1 "github.com/KYVENetwork/chain/api/kyve/global/module"
+	multicoinrewardsmodulev1 "github.com/KYVENetwork/chain/api/kyve/multi_coin_rewards/module"
 	poolmodulev1 "github.com/KYVENetwork/chain/api/kyve/pool/module"
 	querymodulev1 "github.com/KYVENetwork/chain/api/kyve/query/module"
 	stakersmodulev1 "github.com/KYVENetwork/chain/api/kyve/stakers/module"
@@ -45,7 +43,6 @@ import (
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"github.com/cosmos/cosmos-sdk/x/group"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
@@ -53,12 +50,12 @@ import (
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
-	"google.golang.org/protobuf/types/known/durationpb"
 
 	bundlestypes "github.com/KYVENetwork/chain/x/bundles/types"
 	delegationtypes "github.com/KYVENetwork/chain/x/delegation/types"
 	funderstypes "github.com/KYVENetwork/chain/x/funders/types"
 	globaltypes "github.com/KYVENetwork/chain/x/global/types"
+	multicoinrewardstypes "github.com/KYVENetwork/chain/x/multi_coin_rewards/types"
 	pooltypes "github.com/KYVENetwork/chain/x/pool/types"
 	querytypes "github.com/KYVENetwork/chain/x/query/types"
 	stakerstypes "github.com/KYVENetwork/chain/x/stakers/types"
@@ -93,7 +90,6 @@ var (
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
-		group.ModuleName,
 		consensustypes.ModuleName,
 
 		// KYVE modules
@@ -105,6 +101,7 @@ var (
 		globaltypes.ModuleName,
 		teamtypes.ModuleName,
 		funderstypes.ModuleName,
+		multicoinrewardstypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	}
 
@@ -135,6 +132,7 @@ var (
 		// KYVE modules
 		delegationtypes.ModuleName,
 		stakerstypes.ModuleName,
+		multicoinrewardstypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/beginBlockers
 	}
 
@@ -144,7 +142,6 @@ var (
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		feegrant.ModuleName,
-		group.ModuleName,
 		genutiltypes.ModuleName,
 
 		// ibc modules
@@ -181,6 +178,8 @@ var (
 		{Account: delegationtypes.ModuleName},
 		{Account: pooltypes.ModuleName},
 		{Account: stakerstypes.ModuleName},
+		{Account: multicoinrewardstypes.ModuleName},
+		{Account: multicoinrewardstypes.MultiCoinRewardsRedistributionAccountName},
 		{Account: teamtypes.ModuleName},
 		{Account: funderstypes.ModuleName},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
@@ -299,13 +298,6 @@ var (
 				Config: appconfig.WrapAny(&mintmodulev1.Module{}),
 			},
 			{
-				Name: group.ModuleName,
-				Config: appconfig.WrapAny(&groupmodulev1.Module{
-					MaxExecutionPeriod: durationpb.New(time.Second * 1209600),
-					MaxMetadataLen:     255,
-				}),
-			},
-			{
 				Name:   feegrant.ModuleName,
 				Config: appconfig.WrapAny(&feegrantmodulev1.Module{}),
 			},
@@ -354,6 +346,10 @@ var (
 			{
 				Name:   funderstypes.ModuleName,
 				Config: appconfig.WrapAny(&fundersmodulev1.Module{}),
+			},
+			{
+				Name:   multicoinrewardstypes.ModuleName,
+				Config: appconfig.WrapAny(&multicoinrewardsmodulev1.Module{}),
 			},
 			// this line is used by starport scaffolding # stargate/app/moduleConfig
 		},

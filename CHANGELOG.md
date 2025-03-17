@@ -14,17 +14,21 @@
 
 An '!' indicates a state machine breaking change.
 
-## Unreleased
+## [v2.0.0](https://github.com/KYVENetwork/chain/releases/tag/v2.0.0) - 2025-02-27
 
 ### Features
 
+- ! (`x/bundles`) [#236](https://github.com/KYVENetwork/chain/pull/236) merkle_root bundles migration
 - ! (`x/stakers`) [#209](https://github.com/KYVENetwork/chain/pull/209) Shared Staking: Consensus-validator stake is now used for the protocol.
 - ! (`x/stakers`) [#210](https://github.com/KYVENetwork/chain/pull/210) Shared Staking: Pool specific commission and stake fraction.
 - ! (`x/stakers`) [#211](https://github.com/KYVENetwork/chain/pull/211) Shared Staking: Maximum voting power per pool.
 
 ### Improvements
 
+- (deps) [#250](https://github.com/KYVENetwork/chain/pull/250) Remove group module.
+- (`x/stakers`) [#232](https://github.com/KYVENetwork/chain/pull/232) Shared Staking: Update stakers queries 
 - (deps) [#213](https://github.com/KYVENetwork/chain/pull/213) Bump to CosmosSDK v0.50.11 and cleanup deps.
+- (deps) [#246](https://github.com/KYVENetwork/chain/pull/246) Bump stakers module version from v1beta1 to v1
 
 ### Bug Fixes
 

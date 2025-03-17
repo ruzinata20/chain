@@ -53,9 +53,7 @@ import (
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	groupkeeper "github.com/cosmos/cosmos-sdk/x/group/keeper"
-	_ "github.com/cosmos/cosmos-sdk/x/group/module" // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/mint"         // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/mint" // import for side-effects
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	_ "github.com/cosmos/cosmos-sdk/x/params" // import for side-effects
 	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
@@ -77,17 +75,21 @@ import (
 	bundleskeeper "github.com/KYVENetwork/chain/x/bundles/keeper"
 	_ "github.com/KYVENetwork/chain/x/delegation" // import for side-effects
 	delegationkeeper "github.com/KYVENetwork/chain/x/delegation/keeper"
-	_ "github.com/KYVENetwork/chain/x/funders" // import for side-effects
+	_ "github.com/KYVENetwork/chain/x/delegation/types" // import for side-effects
+	_ "github.com/KYVENetwork/chain/x/funders"          // import for side-effects
 	funderskeeper "github.com/KYVENetwork/chain/x/funders/keeper"
 	_ "github.com/KYVENetwork/chain/x/global" // import for side-effects
 	globalkeeper "github.com/KYVENetwork/chain/x/global/keeper"
+	_ "github.com/KYVENetwork/chain/x/multi_coin_rewards" // import for side-effects
+	multicoinrewardskeeper "github.com/KYVENetwork/chain/x/multi_coin_rewards/keeper"
 	_ "github.com/KYVENetwork/chain/x/pool" // import for side-effects
 	poolkeeper "github.com/KYVENetwork/chain/x/pool/keeper"
 	_ "github.com/KYVENetwork/chain/x/query" // import for side-effects
 	querykeeper "github.com/KYVENetwork/chain/x/query/keeper"
 	_ "github.com/KYVENetwork/chain/x/stakers" // import for side-effects
 	stakerskeeper "github.com/KYVENetwork/chain/x/stakers/keeper"
-	_ "github.com/KYVENetwork/chain/x/team" // import for side-effects
+	_ "github.com/KYVENetwork/chain/x/stakers/types_v1beta1" // import for side-effects
+	_ "github.com/KYVENetwork/chain/x/team"                  // import for side-effects
 	teamkeeper "github.com/KYVENetwork/chain/x/team/keeper"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
@@ -119,7 +121,7 @@ type App struct {
 	AccountKeeper      authkeeper.AccountKeeper
 	BankKeeper         bankkeeper.Keeper
 	StakingKeeper      *stakingkeeper.Keeper
-	DistributionKeeper distrkeeper.Keeper
+	DistributionKeeper *distrkeeper.Keeper
 	ConsensusKeeper    consensuskeeper.Keeper
 
 	SlashingKeeper slashingkeeper.Keeper
@@ -131,7 +133,6 @@ type App struct {
 	AuthzKeeper    authzkeeper.Keeper
 	EvidenceKeeper evidencekeeper.Keeper
 	FeeGrantKeeper feegrantkeeper.Keeper
-	GroupKeeper    groupkeeper.Keeper
 
 	// IBC
 	IBCKeeper         *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
@@ -143,14 +144,15 @@ type App struct {
 	ScopedIBCTransferKeeper capabilitykeeper.ScopedKeeper
 
 	// KYVE
-	BundlesKeeper    bundleskeeper.Keeper
-	DelegationKeeper delegationkeeper.Keeper
-	GlobalKeeper     globalkeeper.Keeper
-	PoolKeeper       *poolkeeper.Keeper
-	QueryKeeper      querykeeper.Keeper
-	StakersKeeper    *stakerskeeper.Keeper
-	TeamKeeper       teamkeeper.Keeper
-	FundersKeeper    funderskeeper.Keeper
+	BundlesKeeper          bundleskeeper.Keeper
+	DelegationKeeper       delegationkeeper.Keeper
+	GlobalKeeper           globalkeeper.Keeper
+	PoolKeeper             *poolkeeper.Keeper
+	QueryKeeper            querykeeper.Keeper
+	StakersKeeper          *stakerskeeper.Keeper
+	TeamKeeper             teamkeeper.Keeper
+	FundersKeeper          funderskeeper.Keeper
+	MultiCoinRewardsKeeper multicoinrewardskeeper.Keeper
 
 	// simulation manager
 	// sm *module.SimulationManager
@@ -285,7 +287,6 @@ func New(
 		&app.AuthzKeeper,
 		&app.EvidenceKeeper,
 		&app.FeeGrantKeeper,
-		&app.GroupKeeper,
 
 		// Kyve keepers
 		&app.BundlesKeeper,
@@ -296,6 +297,7 @@ func New(
 		&app.StakersKeeper,
 		&app.TeamKeeper,
 		&app.FundersKeeper,
+		&app.MultiCoinRewardsKeeper,
 		// this line is used by starport scaffolding # stargate/app/keeperDefinition
 	); err != nil {
 		panic(err)
@@ -405,10 +407,16 @@ func New(
 		v2_0.CreateUpgradeHandler(
 			app.ModuleManager,
 			app.Configurator(),
+			app.AccountKeeper,
 			app.DelegationKeeper,
 			app.StakersKeeper,
 			app.StakingKeeper,
 			app.BankKeeper,
+			app.BundlesKeeper,
+			app.GlobalKeeper,
+			app.MultiCoinRewardsKeeper,
+			app.PoolKeeper,
+			app.DistributionKeeper,
 		),
 	)
 
